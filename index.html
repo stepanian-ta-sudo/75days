@@ -1,343 +1,471 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>75 Days Challenge | Achievement Balance</title>
+    <title>75 Дней - Трекер</title>
     <style>
-        :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --border-color: #30363d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --color-pending: #2d333b;
-            --color-completed: #238636;
-            --color-missed: #da3633;
-            --color-accent: #58a6ff;
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            box-sizing: border-box;
         }
 
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 2rem 1rem;
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-
-        header {
+        .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 30px;
         }
 
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* Dashboard Stats */
-        .dashboard {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background-color: var(--bg-primary);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .progress-circle {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(var(--color-completed) var(--percentage, 0%), var(--color-pending) 0%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.5s ease;
-        }
-
-        .progress-circle::before {
-            content: "";
-            position: absolute;
-            width: 90px;
-            height: 90px;
-            background-color: var(--bg-primary);
-            border-radius: 50%;
-        }
-
-        .progress-text {
-            position: relative;
-            font-size: 1.5rem;
+        .title {
+            font-size: 48px;
             font-weight: bold;
-            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .current-day {
+            color: #eaff5a;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #eaff5a;
         }
 
         .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #eaff5a;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: #1a1a1a;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-size: 1rem;
-        }
-
-        .stat-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        .dot-completed { background-color: var(--color-completed); }
-        .dot-missed { background-color: var(--color-missed); }
-        .dot-pending { background-color: var(--color-pending); border: 1px solid var(--text-secondary); }
-
-        /* Calendar Grid */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-            gap: 8px;
-            margin-top: 1rem;
-        }
-
-        .day-box {
-            aspect-ratio: 1;
-            background-color: var(--color-pending);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
 
-        .day-box:hover {
-            transform: scale(1.1);
-            border-color: var(--text-secondary);
+        .day-cell.active {
+            border-color: #eaff5a;
+            background: #2a2a1a;
         }
 
-        .day-box.completed {
-            background-color: var(--color-completed);
-            color: white;
-            border-color: var(--color-completed);
+        .day-cell.completed {
+            background: #eaff5a;
+            color: #000;
         }
 
-        .day-box.missed {
-            background-color: var(--color-missed);
-            color: white;
-            border-color: var(--color-missed);
+        .day-date {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 2px;
         }
 
-        /* Legend */
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+        .day-number {
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        .legend-item {
+        .category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .task {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        /* Reset Button */
-        .reset-btn {
+        .task:hover {
+            background: #252525;
+        }
+
+        .task.completed {
+            background: #1a3a1a;
+            opacity: 0.7;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #444;
+            border-radius: 6px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .task.completed .checkbox {
+            background: #4ade80;
+            border-color: #4ade80;
+        }
+
+        .checkbox::after {
+            content: '✓';
+            color: #000;
+            font-weight: bold;
+            display: none;
+        }
+
+        .task.completed .checkbox::after {
             display: block;
-            margin: 2rem auto 0;
-            padding: 0.6rem 1.2rem;
-            background-color: transparent;
-            border: 1px solid var(--color-missed);
-            color: var(--color-missed);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
         }
 
-        .reset-btn:hover {
-            background-color: rgba(218, 54, 51, 0.1);
+        .task-text {
+            font-size: 16px;
+        }
+
+        .emoji {
+            margin-right: 8px;
         }
 
         @media (max-width: 600px) {
-            .calendar-grid {
-                grid-template-columns: repeat(10, 1fr);
+            .calendar {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
             }
-            .dashboard {
-                flex-direction: column;
+            
+            .day-cell {
+                border-radius: 8px;
+            }
+            
+            .day-number {
+                font-size: 14px;
+            }
+            
+            .title {
+                font-size: 36px;
             }
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <header>
-            <h1>🎯 75 Days Challenge</h1>
-            <p class="subtitle">Click on any day to cycle its status: Pending → Completed → Missed</p>
-        </header>
-
-        <div class="dashboard">
-            <div class="progress-circle" id="progressCircle">
-                <span class="progress-text" id="progressText">0%</span>
-            </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-dot dot-completed"></div>
-                    <span>Completed: <strong id="completedCount">0</strong> days</span>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-dot dot-missed"></div>
-                    <span>Missed: <strong id="missedCount">0</strong> days</span>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-dot dot-pending"></div>
-                    <span>Remaining: <strong id="remainingCount">75</strong> days</span>
-                </div>
-            </div>
+    <div class="header">
+        <h1 class="title">75 ДНЕЙ</h1>
+        <div class="current-day" id="currentDay">День 3/75 — 13.10.2026 (СЕГОДНЯ)</div>
+        <div class="info-box">
+            День 1 — 11 окт: подъем в 6:00 прощается 🙏 С 12 окт строго в 6:00. Прогресс сохраняется в ссылке — добавь страницу в закладки!
         </div>
+    </div>
 
-        <div class="calendar-grid" id="calendarGrid">
-            <!-- Days will be generated by JavaScript -->
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-value" id="todayProgress">0/29</div>
+            <div class="stat-label">сегодня</div>
         </div>
-
-        <div class="legend">
-            <div class="legend-item"><div class="stat-dot dot-pending"></div> Pending</div>
-            <div class="legend-item"><div class="stat-dot dot-completed"></div> Completed</div>
-            <div class="legend-item"><div class="stat-dot dot-missed"></div> Missed</div>
+        <div class="stat-box">
+            <div class="stat-value" id="totalProgress">0%</div>
+            <div class="stat-label">всего</div>
         </div>
+        <div class="stat-box">
+            <div class="stat-value" id="streak">0</div>
+            <div class="stat-label">стрик</div>
+        </div>
+    </div>
 
-        <button class="reset-btn" onclick="resetProgress()">Reset All Progress</button>
+    <div class="calendar" id="calendar"></div>
+
+    <div class="category">
+        <div class="category-title">🏠 Дом</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🧹</span>Чистота дома</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🐶</span>Игра с Ампером 20мин</div>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">ЗДОРОВЬЕ</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">💧</span>2л воды</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">💊</span>Витамины и шоты</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">⏳</span>Голодание 16/8</div>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">ДУХ</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Библия и молитва</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Аффирмации</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Сабляминал</div>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">ЯЗЫКИ</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🇬🇧</span>Английский лекции 1ч</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🇧</span>Англ чтение 20стр</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">📺</span>Офис на английском</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">📚</span>Книга рус 30стр</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🇫🇷</span>Дуолинго французский</div>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">ТЕЛО</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">⏰</span>Подъем в 6:00</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Зарядка утром</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🏋️</span>Тренировка 1ч</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">👟</span>10.000 шагов</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🧘</span>Йога вечером</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Холодный душ</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🛁</span>Вечерний душ</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">💆</span>Массаж ног/рук/лица</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">✨</span>Уход тело/лицо/стиль</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🧹</span>Чистота дома</div>
+        </div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">РАБОТА</div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Работа 4+ч</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">💰</span>Заработок 15к+</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🎬</span>Сценарий 20мин</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🎥</span>Подготовка к полному метру</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji">🎨</span>Клип+этюды+доки</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Книга каждый день</div>
+        </div>
+        <div class="task" onclick="toggleTask(this)">
+            <div class="checkbox"></div>
+            <div class="task-text"><span class="emoji"></span>Гитара 20мин</div>
+        </div>
     </div>
 
     <script>
-        const TOTAL_DAYS = 75;
-        const grid = document.getElementById('calendarGrid');
-        const progressCircle = document.getElementById('progressCircle');
-        const progressText = document.getElementById('progressText');
-        const completedCountEl = document.getElementById('completedCount');
-        const missedCountEl = document.getElementById('missedCount');
-        const remainingCountEl = document.getElementById('remainingCount');
+        // Initialize calendar
+        const calendar = document.getElementById('calendar');
+        const totalDays = 75;
+        const startDate = new Date('2026-10-11');
+        const today = new Date('2026-10-13');
+        
+        // Load saved data
+        let completedDays = JSON.parse(localStorage.getItem('completedDays')) || [];
+        let taskStates = JSON.parse(localStorage.getItem('taskStates')) || {};
 
-        // State management
-        let dayStates = JSON.parse(localStorage.getItem('75dayChallenge')) || {};
-
-        // Initialize grid
-        function initGrid() {
-            grid.innerHTML = '';
-            for (let i = 1; i <= TOTAL_DAYS; i++) {
-                const dayBox = document.createElement('div');
-                dayBox.classList.add('day-box');
-                dayBox.textContent = i;
-                dayBox.dataset.day = i;
-                
-                // Apply saved state
-                if (dayStates[i] === 'completed') {
-                    dayBox.classList.add('completed');
-                } else if (dayStates[i] === 'missed') {
-                    dayBox.classList.add('missed');
-                }
-
-                dayBox.addEventListener('click', () => toggleDay(i, dayBox));
-                grid.appendChild(dayBox);
+        // Generate calendar
+        for (let i = 1; i <= totalDays; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(currentDate.getDate() + (i - 1));
+            
+            const dayCell = document.createElement('div');
+            dayCell.className = 'day-cell';
+            dayCell.dataset.day = i;
+            
+            const dayDate = `${String(currentDate.getDate()).padStart(2, '0')}.${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+            const isToday = currentDate.toDateString() === today.toDateString();
+            
+            if (isToday) {
+                dayCell.classList.add('active');
             }
-            updateStats();
+            
+            if (completedDays.includes(i)) {
+                dayCell.classList.add('completed');
+            }
+            
+            dayCell.innerHTML = `
+                <div class="day-date">${dayDate}</div>
+                <div class="day-number">${i}</div>
+            `;
+            
+            dayCell.onclick = () => toggleDay(i, dayCell);
+            calendar.appendChild(dayCell);
         }
 
-        // Toggle day state: pending -> completed -> missed -> pending
         function toggleDay(day, element) {
-            const currentState = dayStates[day] || 'pending';
-            
-            if (currentState === 'pending') {
-                dayStates[day] = 'completed';
-                element.classList.remove('missed');
-                element.classList.add('completed');
-            } else if (currentState === 'completed') {
-                dayStates[day] = 'missed';
+            const index = completedDays.indexOf(day);
+            if (index > -1) {
+                completedDays.splice(index, 1);
                 element.classList.remove('completed');
-                element.classList.add('missed');
             } else {
-                delete dayStates[day];
-                element.classList.remove('missed', 'completed');
+                completedDays.push(day);
+                element.classList.add('completed');
             }
-            
-            localStorage.setItem('75dayChallenge', JSON.stringify(dayStates));
+            localStorage.setItem('completedDays', JSON.stringify(completedDays));
             updateStats();
         }
 
-        // Update dashboard statistics
+        function toggleTask(element) {
+            element.classList.toggle('completed');
+            const taskId = Array.from(document.querySelectorAll('.task')).indexOf(element);
+            taskStates[taskId] = element.classList.contains('completed');
+            localStorage.setItem('taskStates', JSON.stringify(taskStates));
+            updateStats();
+        }
+
         function updateStats() {
-            let completed = 0;
-            let missed = 0;
-
-            for (let i = 1; i <= TOTAL_DAYS; i++) {
-                if (dayStates[i] === 'completed') completed++;
-                else if (dayStates[i] === 'missed') missed++;
+            // Count today's completed tasks
+            const todayTasks = document.querySelectorAll('.task.completed').length;
+            const totalTasks = document.querySelectorAll('.task').length;
+            
+            // Calculate percentage
+            const totalCompleted = completedDays.length;
+            const percentage = Math.round((totalCompleted / totalDays) * 100);
+            
+            // Calculate streak
+            let streak = 0;
+            for (let i = completedDays.length; i > 0; i--) {
+                if (completedDays.includes(i)) {
+                    streak++;
+                } else {
+                    break;
+                }
             }
-
-            const remaining = TOTAL_DAYS - completed - missed;
-            const percentage = Math.round((completed / TOTAL_DAYS) * 100);
-
-            // Update DOM
-            progressText.textContent = `${percentage}%`;
-            progressCircle.style.setProperty('--percentage', `${percentage}%`);
-            completedCountEl.textContent = completed;
-            missedCountEl.textContent = missed;
-            remainingCountEl.textContent = remaining;
+            
+            document.getElementById('todayProgress').textContent = `${todayTasks}/${totalTasks}`;
+            document.getElementById('totalProgress').textContent = `${percentage}%`;
+            document.getElementById('streak').textContent = streak;
         }
 
-        // Reset all data
-        function resetProgress() {
-            if (confirm('Are you sure you want to reset all 75 days? This cannot be undone.')) {
-                dayStates = {};
-                localStorage.removeItem('75dayChallenge');
-                initGrid();
+        // Restore task states
+        document.querySelectorAll('.task').forEach((task, index) => {
+            if (taskStates[index]) {
+                task.classList.add('completed');
             }
-        }
+        });
 
-        // Start
-        initGrid();
+        // Initial stats update
+        updateStats();
     </script>
 </body>
 </html>
