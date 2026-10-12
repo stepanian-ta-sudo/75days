@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>75 Days Challenge | Achievement Balance</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --color-pending: #2d333b;
+            --color-completed: #238636;
+            --color-missed: #da3633;
+            --color-accent: #58a6ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Dashboard Stats */
+        .dashboard {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--color-completed) var(--percentage, 0%), var(--color-pending) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.5s ease;
+        }
+
+        .progress-circle::before {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background-color: var(--bg-primary);
+            border-radius: 50%;
+        }
+
+        .progress-text {
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+        }
+
+        .stat-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .dot-completed { background-color: var(--color-completed); }
+        .dot-missed { background-color: var(--color-missed); }
+        .dot-pending { background-color: var(--color-pending); border: 1px solid var(--text-secondary); }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .day-box {
+            aspect-ratio: 1;
+            background-color: var(--color-pending);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .day-box:hover {
+            transform: scale(1.1);
+            border-color: var(--text-secondary);
+        }
+
+        .day-box.completed {
+            background-color: var(--color-completed);
+            color: white;
+            border-color: var(--color-completed);
+        }
+
+        .day-box.missed {
+            background-color: var(--color-missed);
+            color: white;
+            border-color: var(--color-missed);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Reset Button */
+        .reset-btn {
+            display: block;
+            margin: 2rem auto 0;
+            padding: 0.6rem 1.2rem;
+            background-color: transparent;
+            border: 1px solid var(--color-missed);
+            color: var(--color-missed);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: rgba(218, 54, 51, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .calendar-grid {
+                grid-template-columns: repeat(10, 1fr);
+            }
+            .dashboard {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🎯 75 Days Challenge</h1>
+            <p class="subtitle">Click on any day to cycle its status: Pending → Completed → Missed</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="progress-circle" id="progressCircle">
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-dot dot-completed"></div>
+                    <span>Completed: <strong id="completedCount">0</strong> days</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-dot dot-missed"></div>
+                    <span>Missed: <strong id="missedCount">0</strong> days</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-dot dot-pending"></div>
+                    <span>Remaining: <strong id="remainingCount">75</strong> days</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Days will be generated by JavaScript -->
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="stat-dot dot-pending"></div> Pending</div>
+            <div class="legend-item"><div class="stat-dot dot-completed"></div> Completed</div>
+            <div class="legend-item"><div class="stat-dot dot-missed"></div> Missed</div>
+        </div>
+
+        <button class="reset-btn" onclick="resetProgress()">Reset All Progress</button>
+    </div>
+
+    <script>
+        const TOTAL_DAYS = 75;
+        const grid = document.getElementById('calendarGrid');
+        const progressCircle = document.getElementById('progressCircle');
+        const progressText = document.getElementById('progressText');
+        const completedCountEl = document.getElementById('completedCount');
+        const missedCountEl = document.getElementById('missedCount');
+        const remainingCountEl = document.getElementById('remainingCount');
+
+        // State management
+        let dayStates = JSON.parse(localStorage.getItem('75dayChallenge')) || {};
+
+        // Initialize grid
+        function initGrid() {
+            grid.innerHTML = '';
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                const dayBox = document.createElement('div');
+                dayBox.classList.add('day-box');
+                dayBox.textContent = i;
+                dayBox.dataset.day = i;
+                
+                // Apply saved state
+                if (dayStates[i] === 'completed') {
+                    dayBox.classList.add('completed');
+                } else if (dayStates[i] === 'missed') {
+                    dayBox.classList.add('missed');
+                }
+
+                dayBox.addEventListener('click', () => toggleDay(i, dayBox));
+                grid.appendChild(dayBox);
+            }
+            updateStats();
+        }
+
+        // Toggle day state: pending -> completed -> missed -> pending
+        function toggleDay(day, element) {
+            const currentState = dayStates[day] || 'pending';
+            
+            if (currentState === 'pending') {
+                dayStates[day] = 'completed';
+                element.classList.remove('missed');
+                element.classList.add('completed');
+            } else if (currentState === 'completed') {
+                dayStates[day] = 'missed';
+                element.classList.remove('completed');
+                element.classList.add('missed');
+            } else {
+                delete dayStates[day];
+                element.classList.remove('missed', 'completed');
+            }
+            
+            localStorage.setItem('75dayChallenge', JSON.stringify(dayStates));
+            updateStats();
+        }
+
+        // Update dashboard statistics
+        function updateStats() {
+            let completed = 0;
+            let missed = 0;
+
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                if (dayStates[i] === 'completed') completed++;
+                else if (dayStates[i] === 'missed') missed++;
+            }
+
+            const remaining = TOTAL_DAYS - completed - missed;
+            const percentage = Math.round((completed / TOTAL_DAYS) * 100);
+
+            // Update DOM
+            progressText.textContent = `${percentage}%`;
+            progressCircle.style.setProperty('--percentage', `${percentage}%`);
+            completedCountEl.textContent = completed;
+            missedCountEl.textContent = missed;
+            remainingCountEl.textContent = remaining;
+        }
+
+        // Reset all data
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all 75 days? This cannot be undone.')) {
+                dayStates = {};
+                localStorage.removeItem('75dayChallenge');
+                initGrid();
+            }
+        }
+
+        // Start
+        initGrid();
+    </script>
+</body>
+</html>
